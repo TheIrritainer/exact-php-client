@@ -1,6 +1,7 @@
 <?php namespace Picqer\Financials\Exact\Query;
 
 use Picqer\Financials\Exact\Connection;
+use Picqer\Financials\Exact\Model;
 
 trait Findable
 {
@@ -82,6 +83,44 @@ trait Findable
         }
     }
 
+    /**
+     * @param Model $model
+     * @return self|null
+     */
+    public function firstRelated($model)
+    {
+        $related = $this->findRelated($model);
+
+        if ($related) {
+            return $related[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * @param Model $model
+     * @return array
+     */
+    public function findRelated($model)
+    {
+        $baseName = $this->getModelBaseName($model);
+
+        $filter = $baseName.' eq guid\''.$model->primaryKeyContent() .'\'';
+
+        return $this->filter($filter);
+    }
+
+    /**
+     * @param string|object $class
+     * @return string
+     */
+    private function getModelBaseName($class)
+    {
+        $class = is_object($class) ? get_class($class) : $class;
+
+        return basename(str_replace('\\', '/', $class));
+    }
 
     public function filter($filter, $expand = '', $select = '', $system_query_options = null, array $headers = [])
     {
